@@ -1,0 +1,912 @@
+
+<index.html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard Vitabe - Expandido</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-sFeyV5QU5eSOPuwtjS5T7X3UTfYvskfJoVnxC3YvDCZTVlR/ENv3UgmgPKq5D0uXL3QuPL6Ofw4BQieq7U5E5g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* Reset and base */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+        Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      background: linear-gradient(135deg, #1B263B 0%, #415A77 100%);
+      color: #EDEDED;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: rgba(255 255 255 / 0.08);
+      pointer-events: none;
+      z-index: 0;
+      backdrop-filter: brightness(1.1);
+    }
+    /* Sidebar */
+    .sidebar {
+      width: 260px;
+      background: #111827cc;
+      display: flex;
+      flex-direction: column;
+      padding: 1.5rem 1.8rem;
+      box-shadow: 3px 0 15px rgba(0,0,0,0.6);
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 10;
+      backdrop-filter: saturate(180%) blur(12px);
+    }
+    .sidebar h2 {
+      font-weight: 900;
+      font-size: 2rem;
+      letter-spacing: 1.5px;
+      margin-bottom: 2rem;
+      color: #60A5FA;
+      text-align: center;
+      text-transform: uppercase;
+      user-select: none;
+    }
+    .sidebar a {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      color: #9CA3AF;
+      font-weight: 600;
+      font-size: 1.1rem;
+      padding: 14px 16px;
+      border-radius: 12px;
+      margin-bottom: 0.8rem;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      user-select: none;
+      text-decoration: none;
+    }
+    .sidebar a i {
+      font-size: 1.3rem;
+      min-width: 22px;
+      text-align: center;
+      color: #60A5FA;    }
+    .sidebar a:hover,
+    .sidebar a.active {
+      background: #2563EBcc;
+      color: #E0E7FF;
+      cursor: pointer;
+    }
+    /* Main Content */
+    main {
+      margin-left: 260px;
+      padding: 2rem 3rem;
+      width: calc(100% - 260px);
+      overflow-y: auto;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      -webkit-overflow-scrolling: touch;
+      position: relative;
+      z-index: 1;
+    }
+    /* Controls */
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem 1.5rem;
+      align-items: center;
+      justify-content: flex-start;
+      background: rgba(17 24 39 / 0.85);
+      padding: 1rem 1.5rem;
+      border-radius: 14px;
+      box-shadow: 0 0 40px rgba(37, 99, 235, 0.7);
+      user-select: none;
+    }
+    .controls label {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: #A5B4FC;
+    }
+    .controls input[type="date"] {
+      margin-left: 0.4rem;
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: none;
+      font-size: 1rem;
+      font-weight: 600;
+      width: 140px;
+      background: #1e40af;
+      color: #EDEDED;
+      transition: background-color 0.3s ease;
+    }
+    .controls input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+      cursor: pointer;
+    }
+    .controls input[type="date"]:focus {
+      outline: none;
+      background: #1e40afcc;
+    }
+    .controls button {
+      background: #2563EB;
+      padding: 0.6rem 1.4rem;
+      font-weight: 700;
+      font-size: 0.95rem;
+      border-radius: 16px;
+      border: none;
+      color: #e0e6f1;
+      cursor: pointer;
+      box-shadow: 0 0 14px #2563EB;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      user-select: none;
+      white-space: nowrap;
+    }
+    .controls button:hover {
+      background: #3b82f6;
+      box-shadow: 0 0 28px #3b82f6;
+    }
+    /* Section styles */
+    section {
+      background: rgba(17 24 39 / 0.8);
+      border-radius: 16px;
+      padding: 2rem 2.5rem;
+      box-shadow: 0 8px 80px rgba(37, 99, 235, 0.3);
+      user-select: none;
+      position: relative;
+      backdrop-filter: saturate(200%) blur(8px);
+    }
+    section h2 {
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      color: #A5B4FC;
+      font-size: 1.95rem;
+      margin-bottom: 1.5rem;
+      border-bottom: 3px solid #2563EBaa;
+      padding-bottom: 6px;
+    }
+    /* Info grid */
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 1.6rem 2rem;
+      margin-bottom: 1.8rem;
+    }
+    .info-card {
+      background: #1e293bdd;
+      padding: 1.3rem 1.2rem;
+      border-radius: 16px;
+      box-shadow: 0 0 28px rgba(99, 115, 129, 0.3);
+      transition: all 0.3s ease;
+      color: #CBD5E1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      cursor: default;
+      text-align: center;
+      user-select: text;
+    }
+    .info-card:hover {
+      box-shadow: 0 0 48px #3b82f6;
+      background: #2563ebdd;
+      color: #e0e6f1;
+    }
+    .info-card .label {
+      font-weight: 700;
+      font-size: 1.05rem;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      text-shadow: 0 0 4px #60a5faaa;
+    }
+    .info-card input.value-input {
+      background: transparent;
+      color: #93c5fd;
+      font-weight: 900;
+      font-size: 1.85rem;
+      border: none;
+      border-bottom: 2px solid #93c5fd;
+      width: 100%;
+      max-width: 120px;
+      padding: 3px 6px;
+      text-align: center;
+      font-family: 'Nunito', sans-serif;
+      transition: border-color 0.3s ease;
+      user-select: text;
+      outline-offset: 4px;
+      outline-color: transparent;
+      caret-color: #93c5fd;
+      text-shadow: 0 0 6px #2563ebaa;
+    }
+    .info-card input.value-input:focus {
+      border-color: #3b82f6;
+      outline-color: #3b82f6;
+      box-shadow: 0 0 12px #60a5faaa;
+    }
+    /* Chart container */
+    .chart-container {
+      position: relative;
+      height: 320px;
+      width: 100%;
+      max-width: 930px;
+      margin: 0 auto;
+      filter: drop-shadow(0 0 8px #2563EBaa);
+      border-radius: 16px;
+      background: #0f172aee;
+      padding: 0.6rem 0.8rem;
+    }
+    /* Scrollbar custom style sidebar */
+    .sidebar::-webkit-scrollbar {
+      width: 8px;
+    }
+    .sidebar::-webkit-scrollbar-track {
+      background: #0e152a;
+    }
+    .sidebar::-webkit-scrollbar-thumb {
+      background: #2563ebcc;
+      border-radius: 10px;
+      box-shadow: inset 0 0 6px rgba(37, 99, 235, 0.6);
+    }
+    /* Responsive adjustments */
+    @media (max-width: 1140px) {
+      main {
+        padding: 1.5rem 1.8rem;
+        width: calc(100% - 260px);
+      }
+      .chart-container {
+        max-width: 100%;
+        height: 280px;
+      }
+    }
+    @media (max-width: 720px) {
+      body {
+        flex-direction: column;
+        overflow: auto;
+      }
+      .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        padding: 1rem 1.3rem;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.8rem;
+      }
+      .sidebar h2 {
+        flex-basis: 100%;
+        font-size: 1.5rem;
+      }
+      .sidebar a {
+        flex-grow: 1;
+        text-align: center;
+        margin-bottom: 0;
+        font-size: 1rem;
+        padding: 10px;
+      }
+      main {
+        margin-left: 0;
+        padding: 1.5rem 1.5rem;
+        width: 100%;
+        height: auto;
+      }
+      .info-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      }
+      .chart-container {
+        height: 240px;
+      }
+    }
+    /* Visually hidden for accessibility descriptions */
+    .visually-hidden {
+      position: absolute !important;
+      width: 1px !important;
+      height: 1px !important;
+      padding: 0 !important;
+      margin: -1px !important;
+      overflow: hidden !important;
+      clip: rect(0,0,0,0) !important;
+      white-space: nowrap !important;
+      border: 0 !important;
+    }
+    /* Ranking List for social media reasons */
+    .ranking-list {
+      max-width: 700px;
+      margin: 0 auto 1.5rem;
+      padding: 1rem 2rem;
+      background: #111827cc;
+      border-radius: 16px;
+      box-shadow: 0 8px 40px rgba(37, 99, 235, 0.3);
+      color: #93c5fd;
+      user-select: none;
+      font-weight: 600;
+    }
+    .ranking-list h3 {
+      font-weight: 900;
+      font-size: 1.4rem;
+      margin-bottom: 1rem;
+      color: #60a5fa;
+      text-align: center;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      text-shadow: 0 0 6px #3b82f6;
+    }
+    .ranking-list ol {
+      list-style: decimal-leading-zero;
+      padding-left: 1.2rem;
+    }
+    .ranking-list li {
+      font-size: 1.15rem;
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid #2563eb88;
+      padding-bottom: 0.4rem;
+      letter-spacing: 0.8px;
+    }
+    .ranking-list li span.reason {
+      flex-grow: 1;
+      max-width: 70%;
+      color: #bfdbfe;
+    }
+    .ranking-list li span.quantity {
+      font-weight: 900;
+      color: #93c5fd;
+      min-width: 40px;
+      text-align: right;
+      text-shadow: 0 0 5px #60a5faaa;
+    }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <h2>Vitabe Dashboard</h2>
+    <a href="#backoffice" class="active"><i class="fas fa-briefcase"></i>Backoffice</a>
+    <a href="#vendas"><i class="fas fa-shopping-cart"></i>Vendas</a>
+    <a href="#cs"><i class="fas fa-users"></i>Customer Success</a>
+    <a href="#midias"><i class="fas fa-share-alt"></i>Mídias Sociais</a>
+  </aside>
+
+  <main>
+    <div class="controls" aria-label="Filtros e Ações">
+      <label for="start-date">De:
+        <input type="date" id="start-date" aria-label="Data inicial"/>
+      </label>
+      <label for="end-date">Até:
+        <input type="date" id="end-date" aria-label="Data final"/>
+      </label>
+      <button id="apply-filters" aria-label="Aplicar filtros">Aplicar Filtros</button>
+      <button id="reset-button" aria-label="Resetar valores do dashboard">Resetar Dashboard</button>
+      <button id="download-csv" aria-label="Exportar dados em CSV">Exportar CSV</button>
+      <button id="download-pdf" aria-label="Baixar relatório em PDF">Baixar Relatório (PDF)</button>
+    </div>
+
+    <!-- Backoffice Section -->
+    <section id="backoffice" tabindex="0">
+      <h2>Backoffice</h2>
+      <div class="info-grid" aria-label="Indicadores Backoffice">
+        <div class="info-card">
+          <div class="label">Pendências Ticket/Chamados</div>
+          <input type="number" class="value-input" id="pendencias" value="12" min="0" />
+        </div>
+        <div class="info-card">
+          <div class="label">Ticket/Chamados encerrados</div>
+          <input type="number" class="value-input" id="ticketsEncerrados" value="58" min="0" />
+        </div>
+        <div class="info-card">
+          <div class="label">Volume Transportadoras - JET</div>
+          <input type="number" class="value-input" id="jetVolume" value="33" min="0" />
+        </div>
+        <div class="info-card">
+          <div class="label">Volume Transportadoras - LOGGI</div>
+          <input type="number" class="value-input" id="loggiVolume" value="24" min="0" />
+        </div>
+        <div class="info-card">
+          <div class="label">Qtd Coletas</div>
+          <input type="number" class="value-input" id="qtdColetas" value="78" min="0" />
+        </div>
+        <div class="info-card">
+          <div class="label">Qtd Reenvios Realizados</div>
+          <input type="number" class="value-input" id="reenviosRealizados" value="10" min="0" />
+        </div>
+        <div class="info-card">
+          <div class="label">Qtd Reenvios Novos</div>
+          <input type="number" class="value-input" id="reenviosNovos" value="5" min="0" />
+        </div>
+        <div class="info-card">
+          <div class="label">Qtd Estornos Realizados</div>
+          <input type="number" class="value-input" id="estornosRealizados" value="7" min="0" />
+        </div>
+        <div class="info-card">
+          <div class="label">Valores Estornos (R$)</div>
+          <input type="number" class="value-input" id="valorEstornos" value="15000" min="0" />
+        </div>
+        <div class="info-card">
+          <div class="label">Reclame Aqui</div>
+          <input type="number" class="value-input" id="reclameAqui" value="3" min="0" />
+        </div>
+        <div class="info-card">
+          <div class="label">Pendências RA</div>
+          <input type="number" class="value-input" id="pendenciasRA" value="1" min="0" />
+        </div>
+      </div>
+      <div class="chart-container" aria-label="Gráfico Backoffice">
+        <canvas id="backofficeChart" role="img" aria-describedby="backofficeChartDesc"></canvas>
+        <p id="backofficeChartDesc" class="visually-hidden">Gráfico de barras mostrando volumes de Pendências, Encerrados, JET, LOGGI, Coletas, Reenvios e Estornos.</p>
+      </div>
+    </section>
+
+    <!-- Vendas Section -->
+    <section id="vendas" tabindex="0">
+      <h2>Vendas (D-1)</h2>
+      <div class="info-grid" aria-label="Indicadores Vendas">
+        <div class="info-card">
+          <div class="label">Qtd de Vendas</div>
+          <input type="number" class="value-input" id="qtdVendas" value="210" min="0" />
+        </div>
+        <div class="info-card">
+          <div class="label">Valor em Vendas (R$)</div>
+          <input type="number" class="value-input" id="valorVendas" value="375000" min="0" />
+        </div>
+        <div class="info-card">
+          <div class="label">Qtd Contatos</div>
+          <input type="number" class="value-input" id="qtdContatos" value="130" min="0" />
+        </div>
+        <div class="info-card">
+          <div class="label">Qtd Disparos Ativos</div>
+          <input type="number" class="value-input" id="disparosAtivos" value="22" min="0" />
+        </div>
+        <div class="info-card">
+          <div class="label">Custo Disparos (R$)</div>
+          <input type="number" class="value-input" id="custoDisparos" value="4200" min="0" />
+        </div>
+      </div>
+      <div class="chart-container" aria-label="Gráfico Vendas">
+        <canvas id="salesChart" role="img" aria-describedby="salesChartDesc"></canvas>
+        <p id="salesChartDesc" class="visually-hidden">Gráfico de barras mostrando Qtd Vendas, Valor, Contatos, Disparos Ativos e Custo Disparos.</p>
+      </div>
+    </section>
+
+    <!-- Customer Success Section -->
+    <section id="cs" tabindex="0">
+      <h2>Customer Success (D-1)</h2>
+      <div class="info-grid" aria-label="Indicadores Customer Success">
+        <div class="info-card">
+          <div class="label">Volume Atendido</div>
+          <input type="number" class="value-input" id="volumeAtendido" value="435" min="0" />
+        </div>
+        <div class="info-card">
+          <div class="label">TMA (min)</div>
+          <input type="number" step="0.1" class="value-input" id="tma" value="3.8" min="0" />
+        </div>
+        <div class="info-card">
+          <div class="label">TME (min)</div>
+          <input type="number" step="0.1" class="value-input" id="tme" value="4.2" min="0" />
+        </div>
+        <div class="info-card">
+          <div class="label">Retenção do Bot (%)</div>
+          <input type="number" class="value-input" id="retencaoBot" value="65" min="0" max="100" />
+        </div>
+      </div>
+      <div class="chart-container" aria-label="Gráfico Customer Success">
+        <canvas id="csChart" role="img" aria-describedby="csChartDesc"></canvas>
+        <p id="csChartDesc" class="visually-hidden">Gráfico de doughnut mostrando Volume Atendido, TMA, TME e Retenção do Bot.</p>
+      </div>
+    </section>
+
+    <!-- Mídias Sociais Section -->
+    <section id="midias" tabindex="0">
+      <h2>Mídias Sociais</h2>
+      <div class="info-grid" aria-label="Indicadores Mídias Sociais">
+        <div class="info-card">
+          <div class="label">C-SAT (%)</div>
+          <input type="number" class="value-input" id="csat" value="88" min="0" max="100" />
+        </div>
+        <div class="info-card">
+          <div class="label">NPS</div>
+          <input type="number" class="value-input" id="nps" value="72" min="0" max="100" />
+        </div>
+        <div class="info-card">
+          <div class="label">Disparos Ativos</div>
+          <input type="number" class="value-input" id="disparosAtivosMidias" value="10" min="0" />
+        </div>
+        <div class="info-card">
+          <div class="label">Custo Disparos (R$)</div>
+          <input type="number" class="value-input" id="custoDisparosMidias" value="2300" min="0" />
+        </div>
+      </div>
+
+      <div class="ranking-list" aria-label="Ranking de Motivos Mídias Sociais">
+        <h3>Ranking Motivos</h3>
+        <ol id="motivos-list" style="list-style: decimal-leading-zero; padding-left: 1.2rem;"></ol>
+      </div>
+
+      <div class="chart-container" aria-label="Gráfico Mídias Sociais">
+        <canvas id="socialMediaChart" role="img" aria-describedby="socialMediaChartDesc"></canvas>
+        <p id="socialMediaChartDesc" class="visually-hidden">Gráfico de barras horizontais para Ranking de Motivos.</p>
+      </div>
+      <div class="chart-container" aria-label="Gráfico NPS e C-SAT">
+        <canvas id="npsCsatChart" role="img" aria-describedby="npsCsatChartDesc"></canvas>
+        <p id="npsCsatChartDesc" class="visually-hidden">Gráficos de NPS e C-SAT em formato donut.</p>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script>
+    // Data for motivos ranking - still static; can be extended to edit dynamically if needed
+    let motivosData = [
+      { name: 'Qualidade', qty: 34 },
+      { name: 'Entrega', qty: 29 },
+      { name: 'Atendimento', qty: 25 },
+      { name: 'Preço', qty: 17 },
+      { name: 'Outro', qty: 9 }
+    ];
+
+    const motivosList = document.getElementById('motivos-list');
+    
+function updateMotivosList() {
+  motivosList.innerHTML = '';
+  motivosData.forEach(({ name, qty }, index) => {
+    const li = document.createElement('li');
+    li.innerHTML = `
+      <input type="text" class="reason-input" data-index="${index}" value="${name}" style="flex-grow:1; max-width: 70%; background: transparent; border: none; border-bottom: 1px solid #60a5fa; color: #bfdbfe; font-weight: 600; font-size: 1.1rem;" />
+      <input type="number" class="qty-input" data-index="${index}" value="${qty}" min="0" style="min-width: 50px; background: transparent; border: none; border-bottom: 2px solid #93c5fd; color: #93c5fd; font-weight: 900; text-align: right;" />
+    `;
+    motivosList.appendChild(li);
+  });
+
+  document.querySelectorAll('.reason-input').forEach(input => {
+    input.addEventListener('input', e => {
+      const index = e.target.dataset.index;
+      motivosData[index].name = e.target.value;
+      updateSocialMediaChart();
+    });
+  });
+
+  document.querySelectorAll('.qty-input').forEach(input => {
+    input.addEventListener('input', e => {
+      const index = e.target.dataset.index;
+      motivosData[index].qty = parseInt(e.target.value) || 0;
+      updateSocialMediaChart();
+    });
+  });
+}
+
+    updateMotivosList();
+
+    const backofficeCtx = document.getElementById('backofficeChart').getContext('2d');
+    const salesCtx = document.getElementById('salesChart').getContext('2d');
+    const csCtx = document.getElementById('csChart').getContext('2d');
+    const socialMediaCtx = document.getElementById('socialMediaChart').getContext('2d');
+    const npsCsatCtx = document.getElementById('npsCsatChart').getContext('2d');
+
+    const backofficeChart = new Chart(backofficeCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Pendências', 'Encerrados', 'JET', 'LOGGI', 'Coletas', 'Reenvios Realizados', 'Estornos Realizados'],
+        datasets: [{
+          label: 'Volumes',
+          data: [12, 58, 33, 24, 78, 10, 7],
+          backgroundColor: ['#3b82f6', '#2563eb', '#60a5fa', '#3b82f6', '#22c55e', '#f97316', '#ef4444'],
+          borderColor: 'rgba(255,255,255,0.4)',
+          borderWidth: 1,
+          borderRadius: 6,
+          maxBarThickness: 40,
+          hoverBackgroundColor: '#1d4ed8',
+        }]
+      },
+      options: {
+        responsive: true,
+        animation: { duration: 800, easing: 'easeOutQuad' },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: {color: '#1e40af'},
+            ticks: {color: '#cbd5e1', font: {weight: '600'}}
+          },
+          x: {
+            grid: {display: false},
+            ticks: {color: '#cbd5e1', font: {weight: '600'}}
+          }
+        },
+        plugins: {
+          legend: {display: false},
+          tooltip: {
+            backgroundColor: '#1e3a8a',
+            bodyFont: {weight: '600'},
+            cornerRadius: 8,
+            padding: 10,
+          }
+        }
+      }
+    });
+
+    const salesChart = new Chart(salesCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Qtd Vendas', 'Valor Vendas (R$)', 'Qtd Contatos', 'Qtd Disparos Ativos', 'Custo Disparos (R$)'],
+        datasets: [{
+          label: 'Dados Vendas',
+          data: [210, 375000, 130, 22, 4200],
+          backgroundColor: '#3b82f6',
+          borderColor: '#1e40af',
+          borderWidth: 2,
+          borderRadius: 10,
+          maxBarThickness: 48,
+          hoverBackgroundColor: '#1e40af',
+        }]
+      },
+      options: {
+        responsive: true,
+        animation: { duration: 800, easing: 'easeOutQuad' },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: { color: '#1e40af' },
+            ticks: { color: '#cbd5e1', font: { weight: '600' } }
+          },
+          x: {
+            grid: { display: false },
+            ticks: { color: '#cbd5e1', font: { weight: '700' } }
+          }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#1e3a8a',
+            bodyFont: { weight: '600' },
+            cornerRadius: 8,
+            padding: 12
+          }
+        }
+      }
+    });
+
+    const csChart = new Chart(csCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Volume Atendido', 'TMA (min)', 'TME (min)', 'Retenção do Bot (%)'],
+        datasets: [{
+          label: 'Customer Success',
+          data: [435, 3.8, 4.2, 65],
+          backgroundColor: ['#3b82f6', '#22c55e', '#f97316', '#ef4444'],
+          borderColor: '#0f172a',
+          borderWidth: 3
+        }]
+      },
+      options: {
+        responsive: true,
+        cutout: '70%',
+        animation: { duration: 1200 },
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { color: '#cbd5e1', font: { weight: '700', size: 14 } }
+          },
+          tooltip: {
+            backgroundColor: '#1e3a8a',
+            bodyFont: { weight: '700' },
+            cornerRadius: 8,
+            padding: 12
+          }
+        }
+      }
+    });
+
+    const socialMediaChart = new Chart(socialMediaCtx, {
+      type: 'bar',
+      data: {
+        labels: motivosData.map(d => d.name),
+        datasets: [{
+          label: 'Quantidade',
+          data: motivosData.map(d => d.qty),
+          backgroundColor: '#3b82f6',
+          borderRadius: 12,
+          maxBarThickness: 40
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        animation: { duration: 900 },
+        scales: {
+          x: {
+            beginAtZero: true,
+            grid: { color: '#1e40af' },
+            ticks: { color: '#cbd5e1', font: { size: 14, weight: '600' } }
+          },
+          y: {
+            grid: { display: false },
+            ticks: { color: '#cbd5e1', font: { size: 14, weight: '700' } }
+          }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#1e3a8a',
+            bodyFont: { weight: '700', size: 14 },
+            cornerRadius: 10,
+            padding: 10
+          }
+        }
+      }
+    });
+
+    const npsCsatChart = new Chart(npsCsatCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['NPS', 'C-SAT'],
+        datasets: [{
+          label: 'NPS and C-SAT',
+          data: [72, 88],
+          backgroundColor: ['#ef4444', '#3b82f6'],
+          borderColor: '#0f172a',
+          borderWidth: 3
+        }]
+      },
+      options: {
+        responsive: true,
+        cutout: '70%',
+        animation: { duration: 1200 },
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { color: '#cbd5e1', font: { weight: '800', size: 16 } }
+          },
+          tooltip: {
+            backgroundColor: '#1e3a8a',
+            bodyFont: { weight: '700', size: 14 },
+            cornerRadius: 8,
+            padding: 12
+          }
+        }
+      }
+    });
+
+    // Update charts when input values change
+    function updateCharts() {
+      backofficeChart.data.datasets[0].data = [
+        parseInt(document.getElementById('pendencias').value) || 0,
+        parseInt(document.getElementById('ticketsEncerrados').value) || 0,
+        parseInt(document.getElementById('jetVolume').value) || 0,
+        parseInt(document.getElementById('loggiVolume').value) || 0,
+        parseInt(document.getElementById('qtdColetas').value) || 0,
+        parseInt(document.getElementById('reenviosRealizados').value) || 0,
+        parseInt(document.getElementById('estornosRealizados').value) || 0
+      ];
+      backofficeChart.update();
+
+      salesChart.data.datasets[0].data = [
+        parseInt(document.getElementById('qtdVendas').value) || 0,
+        parseInt(document.getElementById('valorVendas').value) || 0,
+        parseInt(document.getElementById('qtdContatos').value) || 0,
+        parseInt(document.getElementById('disparosAtivos').value) || 0,
+        parseInt(document.getElementById('custoDisparos').value) || 0
+      ];
+      salesChart.update();
+
+      csChart.data.datasets[0].data = [
+        parseInt(document.getElementById('volumeAtendido').value) || 0,
+        parseFloat(document.getElementById('tma').value) || 0,
+        parseFloat(document.getElementById('tme').value) || 0,
+        parseInt(document.getElementById('retencaoBot').value) || 0
+      ];
+      csChart.update();
+
+      npsCsatChart.data.datasets[0].data = [
+        parseInt(document.getElementById('nps').value) || 0,
+        parseInt(document.getElementById('csat').value) || 0
+      ];
+      npsCsatChart.update();
+    }
+
+    // Attach input event listeners
+    const inputs = document.querySelectorAll('input.value-input');
+    inputs.forEach(input => {
+      input.addEventListener('input', () => {
+        if (input.type === 'number') {
+          const val = input.value;
+          if (val === '' || val === '-') return;
+          if (!/^\d*\.?\d*$/.test(val)) {
+            input.value = val.slice(0, -1);
+            return;
+          }
+        }
+        updateCharts();
+      });
+    });
+
+    // Initial chart update on page load
+    updateCharts();
+
+    // Reset button
+    document.getElementById('reset-button').addEventListener('click', () => {
+      const defaults = {
+        pendencias: 0, ticketsEncerrados: 0, jetVolume: 0, loggiVolume: 0,
+        qtdColetas: 0, reenviosRealizados: 0, reenviosNovos: 0, estornosRealizados: 0,
+        valorEstornos: 0, reclameAqui: 0, pendenciasRA: 0,
+        qtdVendas: 0, valorVendas: 0, qtdContatos: 0, disparosAtivos: 0, custoDisparos: 0,
+        volumeAtendido: 0, tma: 0, tme: 0, retencaoBot: 0,
+        csat: 0, nps: 0, disparosAtivosMidias: 0, custoDisparosMidias: 0
+      };
+      inputs.forEach(input => {
+        if (defaults[input.id] !== undefined) {
+          input.value = defaults[input.id];
+        }
+      });
+      updateCharts();
+    });
+
+    // Download CSV
+    document.getElementById('download-csv').addEventListener('click', () => {
+      const rows = [];
+      const cards = document.querySelectorAll('.info-card');
+      cards.forEach(card => {
+        const label = card.querySelector('.label').textContent;
+        const input = card.querySelector('input.value-input');
+        const value = input ? input.value : '';
+        rows.push([label, value]);
+      });
+      motivosData.forEach(({name, qty}) => {
+        rows.push([`Motivo: ${name}`, qty]);
+      });
+      let csv = 'data:text/csv;charset=utf-8,' + rows.map(r => r.join(';')).join('\n');
+      const encodedUri = encodeURI(csv);
+      const link = document.createElement('a');
+      link.setAttribute('href', encodedUri);
+      link.setAttribute('download', 'dashboard.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+
+    // Download PDF
+    document.getElementById('download-pdf').addEventListener('click', () => {
+      const element = document.querySelector('main');
+      html2pdf().from(element).save('relatorio-dashboard.pdf');
+    });
+
+    // Apply filters placeholder
+    document.getElementById('apply-filters').addEventListener('click', () => {
+      const startDate = document.getElementById('start-date').value;
+      const endDate = document.getElementById('end-date').value;
+      if (!startDate || !endDate) {
+        alert('Por favor, selecione as datas de início e fim para aplicar os filtros.');
+        return;
+      }
+      alert('Filtro aplicado de ' + startDate + ' até ' + endDate);
+    });
+
+    
+function updateSocialMediaChart() {
+  socialMediaChart.data.labels = motivosData.map(d => d.name);
+  socialMediaChart.data.datasets[0].data = motivosData.map(d => d.qty);
+  socialMediaChart.update();
+}
+
+
+// Highlight active sidebar link on scroll
+    const sectionIds = ['backoffice', 'vendas', 'cs', 'midias'];
+    const sidebarLinks = document.querySelectorAll('.sidebar a');
+    window.addEventListener('scroll', () => {
+      const scrollPosition = window.scrollY + (window.innerHeight / 4);
+      let currentId = sectionIds[0];
+      for (const id of sectionIds) {
+        const section = document.getElementById(id);
+        if (section.offsetTop <= scrollPosition) currentId = id;
+      }
+      sidebarLinks.forEach(link => {
+        link.classList.toggle('active', link.getAttribute('href') === '#' + currentId);
+      });
+    });
+  </script>
+</body>
+</html>
+
